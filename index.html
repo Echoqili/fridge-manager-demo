@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鲜知 fridge · AI 冰箱管家</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FFFDF7;
+      --sage: #7C9A6B;
+      --sage-light: #E8F0E4;
+      --sage-dark: #5A7550;
+      --terracotta: #E07A5F;
+      --terracotta-light: #FCEAE6;
+      --mustard: #F2CC8F;
+      --mustard-light: #FDF5E8;
+      --charcoal: #3D405B;
+      --stone: #6B7280;
+      --snow: #FFFFFF;
+      --shadow: 0 8px 32px rgba(61, 64, 91, 0.08);
+      --shadow-hover: 0 16px 48px rgba(61, 64, 91, 0.12);
+      --radius: 24px;
+      --radius-sm: 14px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans SC', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--sage) 0%, var(--mustard) 100%);
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand h1 {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 32px;
+      letter-spacing: 1px;
+    }
+
+    .brand p {
+      color: var(--stone);
+      font-size: 14px;
+      margin-top: -4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--charcoal);
+      color: var(--snow);
+      box-shadow: 0 4px 16px rgba(61, 64, 91, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(61, 64, 91, 0.28);
+    }
+
+    .btn-secondary {
+      background: var(--snow);
+      color: var(--charcoal);
+      border: 2px solid var(--sage-light);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--sage);
+      background: var(--sage-light);
+    }
+
+    .btn-terracotta {
+      background: var(--terracotta);
+      color: var(--snow);
+    }
+
+    .btn-terracotta:hover {
+      background: #c96a52;
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Hero Card */
+    .hero {
+      background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+      color: var(--snow);
+      border-radius: var(--radius);
+      padding: 40px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 420px;
+      height: 420px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .hero h2 {
+      font-size: 28px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .hero p {
+      opacity: 0.92;
+      max-width: 560px;
+      position: relative;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      margin-top: 28px;
+      position: relative;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 32px;
+      font-weight: 900;
+    }
+
+    .hero-stat span {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    /* Main Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 28px;
+    }
+
+    @media (max-width: 920px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--snow);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title .icon {
+      font-size: 24px;
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--sage);
+      border-radius: var(--radius-sm);
+      padding: 32px;
+      text-align: center;
+      background: var(--sage-light);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .upload-zone:hover {
+      background: #dce8d6;
+      border-color: var(--sage-dark);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-zone .upload-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .upload-zone p {
+      color: var(--sage-dark);
+      font-weight: 700;
+    }
+
+    .upload-zone small {
+      color: var(--stone);
+      font-size: 12px;
+    }
+
+    /* Fridge Shelves */
+    .fridge {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .shelf {
+      background: linear-gradient(180deg, #f8faf6 0%, #eef3ec 100%);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      min-height: 90px;
+      border: 1px solid #e2ebe0;
+    }
+
+    .shelf-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .shelf-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .food-item {
+      background: var(--snow);
+      border-radius: 999px;
+      padding: 8px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid #f0f0f0;
+      animation: popIn 0.35s ease backwards;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .food-item:hover {
+      transform: scale(1.05);
+    }
+
+    .food-item.expiring-soon {
+      border-color: var(--terracotta);
+      background: var(--terracotta-light);
+    }
+
+    .food-item .emoji { font-size: 18px; }
+    .food-item .qty { color: var(--stone); font-weight: 500; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Add Form */
+    .add-form {
+      display: grid;
+      grid-template-columns: 1fr 100px 130px auto;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .add-form { grid-template-columns: 1fr; }
+    }
+
+    .add-form input, .add-form select {
+      padding: 12px 16px;
+      border: 2px solid #f0f0f0;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .add-form input:focus, .add-form select:focus {
+      border-color: var(--sage);
+    }
+
+    /* Recipe Section */
+    .recipe-card {
+      background: var(--mustard-light);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-top: 16px;
+      border: 1px solid #f5e6cf;
+      display: none;
+    }
+
+    .recipe-card.active { display: block; animation: slideUp 0.5s ease; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .recipe-card h4 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--charcoal);
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 16px;
+      color: var(--stone);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .recipe-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .recipe-tag {
+      background: var(--snow);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sage-dark);
+    }
+
+    .recipe-steps {
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .recipe-steps li {
+      padding: 8px 0 8px 32px;
+      position: relative;
+      font-size: 14px;
+    }
+
+    .recipe-steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 22px;
+      height: 22px;
+      background: var(--mustard);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .shopping-list {
+      list-style: none;
+    }
+
+    .shopping-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .shopping-list li:last-child { border-bottom: none; }
+
+    .shopping-list input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--sage);
+      cursor: pointer;
+    }
+
+    .shopping-list li.checked span {
+      text-decoration: line-through;
+      color: var(--stone);
+    }
+
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .nutrition-item {
+      background: var(--sage-light);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .nutrition-item strong {
+      display: block;
+      font-size: 24px;
+      color: var(--sage-dark);
+    }
+
+    .nutrition-item span {
+      font-size: 12px;
+      color: var(--stone);
+    }
+
+    .insight-tip {
+      background: var(--terracotta-light);
+      border-left: 4px solid var(--terracotta);
+      padding: 14px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+
+    .insight-tip strong {
+      color: var(--terracotta);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Scanning Overlay */
+    .scan-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(61, 64, 91, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      flex-direction: column;
+      color: var(--snow);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .scan-overlay.active { display: flex; }
+
+    .scan-frame {
+      width: 280px;
+      height: 280px;
+      border: 3px dashed var(--mustard);
+      border-radius: 32px;
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: var(--mustard);
+      box-shadow: 0 0 20px var(--mustard);
+      animation: scan 1.6s ease-in-out infinite;
+    }
+
+    @keyframes scan {
+      0%, 100% { top: 10%; }
+      50% { top: 90%; }
+    }
+
+    .scan-overlay h3 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .scan-overlay p {
+      opacity: 0.85;
+      max-width: 320px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--charcoal);
+      color: var(--snow);
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.active {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      color: var(--stone);
+      padding: 24px;
+      font-size: 14px;
+    }
+
+    .empty-state .big-emoji {
+      font-size: 48px;
+      margin-bottom: 8px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="scan-overlay" id="scanOverlay">
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+    </div>
+    <h3>AI 正在识别冰箱食材</h3>
+    <p>自动识别种类、新鲜度与建议保存位置，请稍候…</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">🥦</div>
+        <div>
+          <h1>鲜知 fridge</h1>
+          <p>AI 冰箱管家 · 剩菜变菜谱，过期早知道</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="resetDemo()">🔄 重置演示</button>
+        <button class="btn btn-primary" onclick="generateRecipes()">✨ 生成今日菜谱</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>打开冰箱，就知道今天吃什么</h2>
+      <p>拍一张照片，AI 自动识别食材、提醒临期、推荐菜谱，还能一键生成购物清单。让每一餐都不浪费。</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong id="statItems">0</strong><span>冰箱食材</span></div>
+        <div class="hero-stat"><strong id="statExpiring">0</strong><span>即将过期</span></div>
+        <div class="hero-stat"><strong id="statRecipes">0</strong><span>可做菜谱</span></div>
+        <div class="hero-stat"><strong id="statSaved">0</strong><span>预计节省(元)</span></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <main>
+        <!-- Upload -->
+        <div class="card">
+          <h3 class="card-title"><span class="icon">📸</span>拍照识食材</h3>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fridgePhoto" accept="image/*" onchange="handlePhotoUpload(event)">
+            <div class="upload-icon">🥗</div>
+            <p>点击上传冰箱照片，或拖拽图片到这里</p>
+            <small>支持 JPG / PNG，AI 会自动识别食材与数量</small>
+          </div>
+
+          <h3 class="card-title"><span class="icon">➕</span>手动添加</h3>
+          <form class="add-form" onsubmit="event.preventDefault(); addItem();">
+            <input type="text" id="itemName" placeholder="食材名称，如：西红柿" required>
+            <input type="number" id="itemQty" placeholder="数量" min="1" value="1" required>
+            <select id="itemShelf">
+              <option value="冷藏室">冷藏室</option>
+              <option value="冷冻室">冷冻室</option>
+              <option value="蔬果室">蔬果室</option>
+              <option value=" pantry"> pantry</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">添加</button>
+          </form>
+
+          <h3 class="card-title"><span class="icon">🧊</span>我的冰箱</h3>
+          <div class="fridge" id="fridgeContainer">
+            <div class="empty-state">
+              <span class="big-emoji">🍃</span>
+              <p>冰箱还是空的，拍张照片或手动添加食材吧</p>
+            </div>
+          </div>
+
+          <div class="recipe-card" id="recipeCard">
+            <h4 id="recipeTitle">🍳 AI 推荐菜谱</h4>
+            <div class="recipe-meta">
+              <span>⏱ <span id="recipeTime">15 分钟</span></span>
+              <span>🔥 <span id="recipeCal">320 kcal</span></span>
+              <span>🍽 <span id="recipeServings">2 人份</span></span>
+            </div>
+            <div class="recipe-tags" id="recipeTags"></div>
+            <ol class="recipe-steps" id="recipeSteps"></ol>
+          </div>
+        </div>
+      </main>
+
+      <aside class="sidebar">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">🛒</span>购物清单</h3>
+          <ul class="shopping-list" id="shoppingList">
+            <li class="empty-state"><span class="big-emoji">📝</span>暂无购物需求</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title"><span class="icon">📊</span>营养洞察</h3>
+          <div class="nutrition-grid">
+            <div class="nutrition-item"><strong id="nutritionVeg">0</strong><span>蔬菜类</span></div>
+            <div class="nutrition-item"><strong id="nutritionProtein">0</strong><span>肉蛋奶</span></div>
+            <div class="nutrition-item"><strong id="nutritionCarb">0</strong><span>主食</span></div>
+            <div class="nutrition-item"><strong id="nutritionFruit">0</strong><span>水果</span></div>
+          </div>
+          <div class="insight-tip" id="insightTip">
+            <strong>💡 AI 建议</strong>
+            <span>添加食材后，我会根据你的库存给出营养搭配建议。</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Demo Data
+    const EMOJI_MAP = {
+      '西红柿': '🍅', '番茄': '🍅', '鸡蛋': '🥚', '蛋': '🥚',
+      '牛奶': '🥛', '酸奶': '🥛', '牛肉': '🥩', '猪肉': '🥓',
+      '鸡肉': '🍗', '鱼': '🐟', '虾': '🦐', '胡萝卜': '🥕',
+      '土豆': '🥔', '洋葱': '🧅', '大蒜': '🧄', '青椒': '🫑',
+      '菠菜': '🥬', '生菜': '🥬', '白菜': '🥬', '西兰花': '🥦',
+      '苹果': '🍎', '香蕉': '🍌', '橙子': '🍊', '葡萄': '🍇',
+      '草莓': '🍓', '西瓜': '🍉', '米饭': '🍚', '面条': '🍜',
+      '面包': '🍞', '豆腐': '🧈', '芝士': '🧀', '黄油': '🧈',
+      '蘑菇': '🍄', '玉米': '🌽', '茄子': '🍆', '黄瓜': '🥒',
+      '柠檬': '🍋', '葱': '🌱', '姜': '🫚'
+    };
+
+    const CATEGORIES = {
+      veg: ['西红柿', '番茄', '胡萝卜', '土豆', '洋葱', '大蒜', '青椒', '菠菜', '生菜', '白菜', '西兰花', '黄瓜', '茄子', '蘑菇', '玉米', '葱', '姜'],
+      protein: ['鸡蛋', '蛋', '牛奶', '酸奶', '牛肉', '猪肉', '鸡肉', '鱼', '虾', '豆腐', '芝士', '黄油'],
+      carb: ['米饭', '面条', '面包', '土豆'],
+      fruit: ['苹果', '香蕉', '橙子', '葡萄', '草莓', '西瓜', '柠檬']
+    };
+
+    const RECIPE_TEMPLATES = [
+      {
+        name: '西红柿炒鸡蛋',
+        tags: ['家常', '快手', '高蛋白'],
+        time: '10 分钟',
+        cal: '280 kcal',
+        servings: '2 人份',
+        need: ['西红柿', '鸡蛋'],
+        steps: ['西红柿切块，鸡蛋打散备用', '热锅倒油，炒熟鸡蛋盛出', '再炒西红柿出汁，倒入鸡蛋翻炒', '加盐调味，撒葱花出锅']
+      },
+      {
+        name: '土豆炖牛肉',
+        tags: ['下饭', '暖胃', '高蛋白'],
+        time: '45 分钟',
+        cal: '520 kcal',
+        servings: '3 人份',
+        need: ['土豆', '牛肉', '洋葱', '胡萝卜'],
+        steps: ['牛肉切块焯水去血沫', '洋葱爆香，加入牛肉翻炒上色', '加水炖煮 30 分钟', '加入土豆、胡萝卜继续炖 15 分钟', '加盐、生抽调味即可']
+      },
+      {
+        name: '蒜蓉西兰花',
+        tags: ['低脂', '健康', '素食'],
+        time: '8 分钟',
+        cal: '120 kcal',
+        servings: '2 人份',
+        need: ['西兰花', '大蒜'],
+        steps: ['西兰花掰小朵焯水 1 分钟', '大蒜切末', '热锅爆香蒜末', '倒入西兰花快炒，加盐出锅']
+      },
+      {
+        name: '香蕉牛奶昔',
+        tags: ['早餐', '甜品', '补钙'],
+        time: '3 分钟',
+        cal: '210 kcal',
+        servings: '1 人份',
+        need: ['香蕉', '牛奶'],
+        steps: ['香蕉切段', '与牛奶一起放入搅拌机', '打 30 秒至顺滑', '倒入杯中即可享用']
+      },
+      {
+        name: '鸡肉蔬菜炒饭',
+        tags: ['一人食', '饱腹', '均衡'],
+        time: '15 分钟',
+        cal: '450 kcal',
+        servings: '1 人份',
+        need: ['鸡肉', '米饭', '胡萝卜', '鸡蛋'],
+        steps: ['鸡肉切丁，胡萝卜切丁，鸡蛋打散', '先炒鸡蛋，再加入鸡肉炒熟', '倒入米饭和胡萝卜丁翻炒均匀', '加盐、生抽调味即可']
+      }
+    ];
+
+    let items = [];
+
+    function initDemo() {
+      items = [
+        { id: 1, name: '西红柿', qty: 3, shelf: '蔬果室', daysLeft: 2 },
+        { id: 2, name: '鸡蛋', qty: 6, shelf: '冷藏室', daysLeft: 7 },
+        { id: 3, name: '牛奶', qty: 1, shelf: '冷藏室', daysLeft: 4 },
+        { id: 4, name: '西兰花', qty: 1, shelf: '蔬果室', daysLeft: 1 },
+        { id: 5, name: '鸡肉', qty: 2, shelf: '冷冻室', daysLeft: 14 },
+        { id: 6, name: '土豆', qty: 4, shelf: '蔬果室', daysLeft: 9 },
+        { id: 7, name: '胡萝卜', qty: 2, shelf: '蔬果室', daysLeft: 8 }
+      ];
+      render();
+      showToast('✅ 演示数据已加载，试试生成菜谱吧');
+    }
+
+    function resetDemo() {
+      items = [];
+      document.getElementById('recipeCard').classList.remove('active');
+      render();
+      showToast('🔄 已清空，重新开始');
+    }
+
+    function getEmoji(name) {
+      for (const key in EMOJI_MAP) {
+        if (name.includes(key)) return EMOJI_MAP[key];
+      }
+      return '🍽';
+    }
+
+    function render() {
+      const container = document.getElementById('fridgeContainer');
+      const shelves = ['冷藏室', '冷冻室', '蔬果室', ' pantry'];
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="big-emoji">🍃</span>
+            <p>冰箱还是空的，拍张照片或手动添加食材吧</p>
+          </div>`;
+      } else {
+        container.innerHTML = shelves.map(shelf => {
+          const shelfItems = items.filter(i => i.shelf === shelf);
+          return `
+            <div class="shelf">
+              <div class="shelf-label">${shelf}</div>
+              <div class="shelf-items">
+                ${shelfItems.length > 0
+                  ? shelfItems.map(item => `
+                    <div class="food-item ${item.daysLeft <= 2 ? 'expiring-soon' : ''}" onclick="removeItem(${item.id})" title="点击移除">
+                      <span class="emoji">${getEmoji(item.name)}</span>
+                      <span>${item.name}</span>
+                      <span class="qty">×${item.qty}</span>
+                      ${item.daysLeft <= 2 ? '<span>⚠️</span>' : ''}
+                    </div>
+                  `).join('')
+                  : '<span style="color:#9ca3af;font-size:13px;">暂无食材</span>'}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      updateStats();
+      updateShoppingList();
+      updateNutrition();
+    }
+
+    function updateStats() {
+      document.getElementById('statItems').textContent = items.length;
+      document.getElementById('statExpiring').textContent = items.filter(i => i.daysLeft <= 2).length;
+      document.getElementById('statRecipes').textContent = getMatchingRecipes().length;
+      document.getElementById('statSaved').textContent = items.reduce((sum, i) => sum + (i.daysLeft <= 2 ? 8 : 0), 0);
+    }
+
+    function updateShoppingList() {
+      const list = document.getElementById('shoppingList');
+      const needed = getMissingIngredients();
+
+      if (needed.length === 0) {
+        list.innerHTML = '<li class="empty-state"><span class="big-emoji">📝</span>暂无购物需求</li>';
+        return;
+      }
+
+      list.innerHTML = needed.map((item, idx) => `
+        <li onclick="toggleCheck(this)">
+          <input type="checkbox" id="shop-${idx}">
+          <span>${getEmoji(item)} ${item}</span>
+        </li>
+      `).join('');
+    }
+
+    function toggleCheck(li) {
+      const checkbox = li.querySelector('input');
+      checkbox.checked = !checkbox.checked;
+      li.classList.toggle('checked', checkbox.checked);
+    }
+
+    function updateNutrition() {
+      const counts = { veg: 0, protein: 0, carb: 0, fruit: 0 };
+      items.forEach(item => {
+        for (const [cat, keys] of Object.entries(CATEGORIES)) {
+          if (keys.some(k => item.name.includes(k))) counts[cat] += item.qty;
+        }
+      });
+
+      document.getElementById('nutritionVeg').textContent = counts.veg;
+      document.getElementById('nutritionProtein').textContent = counts.protein;
+      document.getElementById('nutritionCarb').textContent = counts.carb;
+      document.getElementById('nutritionFruit').textContent = counts.fruit;
+
+      const tip = document.getElementById('insightTip');
+      if (items.length === 0) {
+        tip.innerHTML = '<strong>💡 AI 建议</strong><span>添加食材后，我会根据你的库存给出营养搭配建议。</span>';
+      } else if (counts.protein === 0) {
+        tip.innerHTML = '<strong>💡 AI 建议</strong><span>本周蛋白质摄入偏少，建议补充鸡蛋、牛奶或肉类。</span>';
+      } else if (counts.veg === 0) {
+        tip.innerHTML = '<strong>💡 AI 建议</strong><span>蔬菜库存不足，记得采购新鲜蔬菜平衡膳食。</span>';
+      } else if (counts.fruit === 0) {
+        tip.innerHTML = '<strong>💡 AI 建议</strong><span>冰箱里没有水果，饭后吃点水果补充维生素吧。</span>';
+      } else {
+        tip.innerHTML = '<strong>💡 AI 建议</strong><span>营养搭配不错！建议优先食用临期食材，减少浪费。</span>';
+      }
+    }
+
+    function addItem() {
+      const name = document.getElementById('itemName').value.trim();
+      const qty = parseInt(document.getElementById('itemQty').value) || 1;
+      const shelf = document.getElementById('itemShelf').value;
+      if (!name) return;
+
+      items.push({
+        id: Date.now(),
+        name,
+        qty,
+        shelf,
+        daysLeft: Math.floor(Math.random() * 10) + 1
+      });
+
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemQty').value = '1';
+      render();
+      showToast(`✅ 已添加 ${getEmoji(name)} ${name}`);
+    }
+
+    function removeItem(id) {
+      const item = items.find(i => i.id === id);
+      items = items.filter(i => i.id !== id);
+      render();
+      showToast(`🗑 已移除 ${getEmoji(item.name)} ${item.name}`);
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const overlay = document.getElementById('scanOverlay');
+      overlay.classList.add('active');
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        const detected = [
+          { name: '西红柿', qty: 2, shelf: '蔬果室', daysLeft: 3 },
+          { name: '鸡蛋', qty: 4, shelf: '冷藏室', daysLeft: 6 },
+          { name: '胡萝卜', qty: 3, shelf: '蔬果室', daysLeft: 8 },
+          { name: '牛奶', qty: 1, shelf: '冷藏室', daysLeft: 4 }
+        ];
+
+        detected.forEach(d => {
+          const exists = items.find(i => i.name === d.name && i.shelf === d.shelf);
+          if (exists) exists.qty += d.qty;
+          else items.push({ ...d, id: Date.now() + Math.random() });
+        });
+
+        render();
+        showToast(`✨ 识别成功！新增 ${detected.length} 种食材`);
+      }, 2200);
+    }
+
+    function getMatchingRecipes() {
+      const names = items.map(i => i.name);
+      return RECIPE_TEMPLATES.filter(r => r.need.some(n => names.some(name => name.includes(n))));
+    }
+
+    function getMissingIngredients() {
+      const names = items.map(i => i.name);
+      const missing = new Set();
+      getMatchingRecipes().forEach(r => {
+        r.need.forEach(n => {
+          if (!names.some(name => name.includes(n))) missing.add(n);
+        });
+      });
+      return Array.from(missing);
+    }
+
+    function generateRecipes() {
+      if (items.length === 0) {
+        showToast('⚠️ 冰箱是空的，先添加食材吧');
+        return;
+      }
+
+      const matches = getMatchingRecipes();
+      const card = document.getElementById('recipeCard');
+
+      if (matches.length === 0) {
+        showToast('🤔 食材还不够搭配，再添加几种试试吧');
+        card.classList.remove('active');
+        return;
+      }
+
+      // Prefer recipe using most expiring ingredients
+      const recipe = matches.sort((a, b) => {
+        const aExpiring = a.need.filter(n => items.some(i => i.name.includes(n) && i.daysLeft <= 2)).length;
+        const bExpiring = b.need.filter(n => items.some(i => i.name.includes(n) && i.daysLeft <= 2)).length;
+        return bExpiring - aExpiring;
+      })[0];
+
+      document.getElementById('recipeTitle').textContent = `🍳 ${recipe.name}`;
+      document.getElementById('recipeTime').textContent = recipe.time;
+      document.getElementById('recipeCal').textContent = recipe.cal;
+      document.getElementById('recipeServings').textContent = recipe.servings;
+      document.getElementById('recipeTags').innerHTML = recipe.tags.map(t => `<span class="recipe-tag">${t}</span>`).join('');
+      document.getElementById('recipeSteps').innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+
+      card.classList.add('active');
+      updateShoppingList();
+      showToast('✨ 已为你生成最优菜谱，优先消耗临期食材');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 2800);
+    }
+
+    // Drag and drop
+    const uploadZone = document.getElementById('uploadZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, e => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, () => uploadZone.style.background = '#dce8d6', false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadZone.addEventListener(eventName, () => uploadZone.style.background = '', false);
+    });
+    uploadZone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length) {
+        document.getElementById('fridgePhoto').files = files;
+        handlePhotoUpload({ target: { files } });
+      }
+    }, false);
+
+    // Initialize
+    initDemo();
+  </script>
+</body>
+</html>
