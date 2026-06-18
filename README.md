@@ -1,17 +1,1 @@
-# 鲜知 fridge · AI 冰箱管家
-
-TRAE AI 创造力大赛 Demo 项目。
-
-> 在线体验：https://echoqili.github.io/fridge-manager-demo/
-
-## 功能亮点
-
-- 📸 拍照识食材
-- 🧊 可视化冰箱库存
-- ✨ AI 智能菜谱推荐
-- 🛒 一键购物清单
-- 📊 营养洞察
-
-## 技术栈
-
-原生 HTML / CSS / JavaScript，通过 GitHub Actions 部署到 GitHub Pages。
+IyDlv7PkuoYgZnJpZGdlwr0gQUkg5Y+v55So566x55SoCgoVUkFFIEFJIOWFsOeJqeiDveWQ pOaEn1BERU1PIOaVsOaNruWksei0pS4KCueUqOaIt+e7hOS7tuS4qu+8mjogaHR0cHM6Ly9lY2hvcWlsaS5naXRodWIuaW8vZnJpZGdlLW1hbmFnZXIvCgojIyDnjqnnlrDliKZngK8KCi0g8J+TuCDmkpLmlq3og4znuqfvvIzosrXnlaXvvIzlubPlj5bor4fmoYgKLSDwn5eLIOW8gOWPkeaWmeacieaEn+ihjAotIPCfjKogQUkgIOW5v+S4nueUqOaIt+W8gOWPkeaOqOiNkQotIPCfj5Ig5LiX6ZmF6L+Q6J6MMCBIOaWmeacieW4uOi/nuaYpeihjAotIPCfj5og6Iux6K+t5oCn6IO9CgojIyDnsr7nlaXnqbrmlokKCuWkmuS5puaOqOiNkCBIVE1MIC8gQ1NTIC8gSmF2YVNjcmlwdCzkuIrmtbfpgInmi5npgJrov4cgR2l0SHViIFBhZ2VzLuWQjOaEny4=
