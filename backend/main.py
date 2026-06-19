@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 from core.config import settings
 from core.exceptions import AppException
 from models.database import dispose_db, init_db
-from routers import auth, health, ingredients, nutrition, recipes, recognition
+from routers import auth, health, ingredients, nutrition, recipes, recognition, shopping_list
 
 # 日志配置
 logging.basicConfig(
@@ -60,6 +60,7 @@ app.include_router(ingredients.router, prefix=api_prefix)
 app.include_router(recipes.router, prefix=api_prefix)
 app.include_router(recognition.router, prefix=api_prefix)
 app.include_router(nutrition.router, prefix=api_prefix)
+app.include_router(shopping_list.router, prefix=api_prefix)
 
 
 @app.exception_handler(AppException)

@@ -27,6 +27,15 @@ vi.mock('../src/api/nutrition', () => ({
   getNutritionSummary: vi.fn(() => Promise.resolve({}))
 }));
 
+vi.mock('../src/api/shoppingList', () => ({
+  getShoppingList: vi.fn(() => Promise.resolve([])),
+  addShoppingItem: vi.fn(),
+  batchAddShoppingItems: vi.fn(() => Promise.resolve([])),
+  updateShoppingItem: vi.fn(),
+  deleteShoppingItem: vi.fn(),
+  clearShoppingList: vi.fn()
+}));
+
 vi.mock('../src/api/auth', () => ({
   login: vi.fn(),
   register: vi.fn(),
@@ -46,7 +55,9 @@ function renderWithProviders(ui, { ingredients = [], user = { username: 'test' }
     user,
     ingredients,
     loading: false,
+    isDemo: false,
     login: vi.fn(),
+    demoLogin: vi.fn(),
     logout: vi.fn(),
     refreshIngredients: vi.fn(),
     addIngredient: vi.fn(),

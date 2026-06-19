@@ -55,7 +55,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     """初始化数据库：创建所有表。"""
     # 确保所有模型被导入，以便 Base.metadata 包含全部表
-    from models import ingredient, recipe, user  # noqa: F401
+    from models import ingredient, recipe, shopping_list, user  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

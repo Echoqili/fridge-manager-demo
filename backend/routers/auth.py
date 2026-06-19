@@ -57,7 +57,13 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> Ap
         raise AuthenticationException(message="账号已被禁用")
 
     access_token, refresh_token = create_token_pair(user.user_id)
-    return ApiResponse.success(data=TokenResponse(access_token=access_token, refresh_token=refresh_token))
+    return ApiResponse.success(
+        data=TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user=UserResponse.model_validate(user),
+        )
+    )
 
 
 @router.post("/refresh", response_model=ApiResponse[TokenResponse])
@@ -81,7 +87,13 @@ async def refresh(payload: RefreshTokenRequest, db: AsyncSession = Depends(get_d
         raise AuthenticationException(message="用户不存在或已被禁用")
 
     access_token, new_refresh_token = create_token_pair(user.user_id)
-    return ApiResponse.success(data=TokenResponse(access_token=access_token, refresh_token=new_refresh_token))
+    return ApiResponse.success(
+        data=TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            user=UserResponse.model_validate(user),
+        )
+    )
 
 
 @router.post("/logout", response_model=ApiResponse[dict])

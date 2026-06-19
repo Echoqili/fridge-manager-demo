@@ -6,7 +6,10 @@ AI 不可用时降级返回预设食材关键词库。
 from __future__ import annotations
 
 import base64
+import json
 import logging
+
+import httpx
 
 from core.config import settings
 from schemas.recognition import RecognitionResponse, RecognitionResult
@@ -42,6 +45,16 @@ def _build_openai_prompt() -> str:
     )
 
 
+def _clean_json_content(content: str) -> str:
+    """清理 LLM 返回内容中的 Markdown 代码块标记。"""
+    content = content.strip()
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1]
+    if content.endswith("```"):
+        content = content.rsplit("\n", 1)[0]
+    return content.strip()
+
+
 async def _recognize_with_openai(image_bytes: bytes) -> list[RecognitionResult] | None:
     """使用 OpenAI GPT-4o 识别食材。"""
     if not settings.OPENAI_API_KEY:
@@ -69,13 +82,7 @@ async def _recognize_with_openai(image_bytes: bytes) -> list[RecognitionResult] 
             max_tokens=500,
         )
         content = response.choices[0].message.content or ""
-        # 简易 JSON 解析（实际可使用 json.loads + 容错）
-        import json
-
-        # 去除可能的 markdown 代码块标记
-        content = content.strip().strip("`")
-        if content.startswith("json"):
-            content = content[4:].strip()
+        content = _clean_json_content(content)
         data = json.loads(content)
         results: list[RecognitionResult] = []
         for item in data:
@@ -94,12 +101,61 @@ async def _recognize_with_openai(image_bytes: bytes) -> list[RecognitionResult] 
 
 
 async def _recognize_with_zhipu(image_bytes: bytes) -> list[RecognitionResult] | None:
-    """使用智谱 GLM-4V 识别食材（占位实现，需集成智谱 SDK）。"""
+    """使用智谱 GLM-4V 识别食材。
+
+    通过智谱开放平台 API 调用 GLM-4V 多模态模型，发送 base64 图片并要求返回 JSON。
+    """
     if not settings.ZHIPU_API_KEY:
         return None
-    # 智谱 SDK 集成略，降级到 fallback
-    logger.info("智谱识别未实现，降级到本地预设")
-    return None
+    try:
+        base64_image = _encode_image(image_bytes)
+        payload = {
+            "model": settings.ZHIPU_MODEL,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": _build_openai_prompt()},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                        },
+                    ],
+                }
+            ],
+            "max_tokens": 500,
+            "temperature": 0.1,
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {settings.ZHIPU_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        content = data["choices"][0]["message"]["content"] or ""
+        content = _clean_json_content(content)
+        items = json.loads(content)
+        results: list[RecognitionResult] = []
+        for item in items:
+            results.append(
+                RecognitionResult(
+                    name=item.get("name", "未知"),
+                    category=item.get("category", "other"),
+                    confidence=float(item.get("confidence", 0.5)),
+                    quantity=item.get("quantity"),
+                )
+            )
+        logger.info("智谱 GLM-4V 识别成功，返回 %d 种食材", len(results))
+        return results
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("智谱 GLM-4V 识别失败，将降级: %s", exc)
+        return None
 
 
 async def recognize_image(image_bytes: bytes) -> RecognitionResponse:

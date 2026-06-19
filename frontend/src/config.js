@@ -23,7 +23,8 @@ export const THEME_COLORS = {
 // 食材分类
 export const CATEGORIES = {
   vegetable: '蔬菜',
-  meat: '肉蛋奶',
+  meat: '肉类',
+  dairy: '蛋奶',
   staple: '主食',
   fruit: '水果',
   other: '其他'

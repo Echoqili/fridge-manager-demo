@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Row,
   Col,
@@ -27,6 +27,7 @@ import UploadPanel from '../components/UploadPanel';
 import ShoppingList from '../components/ShoppingList';
 import RecipeCard from '../components/RecipeCard';
 import { recommendRecipes } from '../api/recipes';
+import * as shoppingApi from '../api/shoppingList';
 import {
   isExpiringSoon,
   calculateSavings,
@@ -92,12 +93,13 @@ const LOCAL_RECIPES = [
 ];
 
 function HomePage() {
-  const { ingredients, addIngredient, removeIngredient } = useApp();
+  const { user, isDemo, ingredients, addIngredient, removeIngredient } = useApp();
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [recipes, setRecipes] = useState([]);
   const [recipesLoading, setRecipesLoading] = useState(false);
   const [shoppingItems, setShoppingItems] = useState([]);
+  const [shoppingLoading, setShoppingLoading] = useState(false);
 
   // 统计数据
   const stats = useMemo(() => {
@@ -139,11 +141,15 @@ function HomePage() {
         ingredients: ingredients.map((i) => i.name)
       });
       const list = Array.isArray(data) ? data : data?.items || [];
-      setRecipes(list.length > 0 ? list : matchingLocalRecipes);
+      const finalRecipes = list.length > 0 ? list : matchingLocalRecipes;
+      setRecipes(finalRecipes);
+      // 同步缺失食材到购物清单
+      syncMissingToShoppingList(finalRecipes);
       message.success('已为你生成最优菜谱，优先消耗临期食材');
     } catch (e) {
       // API 不可用，使用本地菜谱
       setRecipes(matchingLocalRecipes);
+      syncMissingToShoppingList(matchingLocalRecipes);
       message.success('已为你生成推荐菜谱');
     } finally {
       setRecipesLoading(false);
@@ -187,23 +193,102 @@ function HomePage() {
     }
   };
 
-  // 计算缺失食材（购物清单）
-  useEffect(() => {
-    if (recipes.length === 0) {
-      setShoppingItems([]);
+  // 加载购物清单（登录用户从后端获取，演示模式使用本地计算）
+  const refreshShoppingList = useCallback(async () => {
+    if (isDemo || !user) {
+      // 演示模式：根据菜谱缺失食材计算
+      if (recipes.length === 0) {
+        setShoppingItems([]);
+        return;
+      }
+      const names = ingredients.map((i) => i.name);
+      const missing = new Set();
+      recipes.forEach((r) => {
+        (r.need || r.ingredients || []).forEach((n) => {
+          const name = typeof n === 'string' ? n : n?.ingredient_name || n?.name;
+          if (name && !names.some((nm) => nm && nm.includes(name))) {
+            missing.add(name);
+          }
+        });
+      });
+      setShoppingItems(Array.from(missing).map((name) => ({ name, checked: false })));
       return;
     }
+    setShoppingLoading(true);
+    try {
+      const data = await shoppingApi.getShoppingList();
+      setShoppingItems(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setShoppingItems([]);
+    } finally {
+      setShoppingLoading(false);
+    }
+  }, [isDemo, user, recipes, ingredients]);
+
+  useEffect(() => {
+    refreshShoppingList();
+  }, [refreshShoppingList]);
+
+  // 购物清单勾选/取消勾选
+  const handleToggleShoppingItem = async (index, item) => {
+    if (isDemo || !item.item_id) {
+      setShoppingItems((prev) =>
+        prev.map((it, i) => (i === index ? { ...it, checked: !it.checked } : it))
+      );
+      return;
+    }
+    try {
+      await shoppingApi.updateShoppingItem(item.item_id, { checked: !item.checked });
+      setShoppingItems((prev) =>
+        prev.map((it, i) => (i === index ? { ...it, checked: !it.checked } : it))
+      );
+    } catch (e) {
+      message.error('更新失败');
+    }
+  };
+
+  // 删除购物清单条目
+  const handleDeleteShoppingItem = async (item) => {
+    if (isDemo || !item.item_id) {
+      setShoppingItems((prev) => prev.filter((it) => it.name !== item.name));
+      return;
+    }
+    try {
+      await shoppingApi.deleteShoppingItem(item.item_id);
+      setShoppingItems((prev) => prev.filter((it) => it.item_id !== item.item_id));
+      message.success('已删除');
+    } catch (e) {
+      message.error('删除失败');
+    }
+  };
+
+  // 生成菜谱后自动将缺失食材同步到购物清单
+  const syncMissingToShoppingList = async (recipesList) => {
     const names = ingredients.map((i) => i.name);
     const missing = new Set();
-    recipes.forEach((r) => {
-      (r.need || []).forEach((n) => {
-        if (!names.some((name) => name && name.includes(n))) {
-          missing.add(n);
+    recipesList.forEach((r) => {
+      (r.need || r.ingredients || []).forEach((n) => {
+        const name = typeof n === 'string' ? n : n?.ingredient_name || n?.name;
+        if (name && !names.some((nm) => nm && nm.includes(name))) {
+          missing.add(name);
         }
       });
     });
-    setShoppingItems(Array.from(missing));
-  }, [recipes, ingredients]);
+    const missingItems = Array.from(missing).map((name) => ({ name, quantity: '1个' }));
+
+    if (isDemo || !user) {
+      setShoppingItems(missingItems.map((it) => ({ ...it, checked: false })));
+      return;
+    }
+    if (missingItems.length === 0) return;
+    try {
+      await shoppingApi.clearShoppingList();
+      const created = await shoppingApi.batchAddShoppingItems(missingItems);
+      setShoppingItems(created);
+    } catch (e) {
+      // 静默失败，不影响菜谱推荐
+    }
+  };
 
   const shelfTabs = Object.entries(STORAGE_LOCATIONS).map(([key, label]) => ({
     key,
@@ -324,7 +409,11 @@ function HomePage() {
         <Col xs={24} lg={8}>
           <Space direction="vertical" size={24} style={{ width: '100%' }}>
             <Card title={<><ShoppingOutlined /> 购物清单</>}>
-              <ShoppingList items={shoppingItems} />
+              <ShoppingList
+                items={shoppingItems}
+                onToggle={handleToggleShoppingItem}
+                onDelete={handleDeleteShoppingItem}
+              />
             </Card>
 
             <Card

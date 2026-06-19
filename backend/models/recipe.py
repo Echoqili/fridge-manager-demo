@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
 from models.database import Base
@@ -33,6 +33,13 @@ class RecipeModel(Base):
     source: Mapped[str] = mapped_column(String(16), nullable=False, default="local")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
+    ingredients: Mapped[list[RecipeIngredientModel]] = relationship(
+        "RecipeIngredientModel",
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
 
 class RecipeIngredientModel(Base):
     """菜谱食材关联表。"""
@@ -46,3 +53,5 @@ class RecipeIngredientModel(Base):
     ingredient_name: Mapped[str] = mapped_column(String(128), nullable=False)
     amount: Mapped[str | None] = mapped_column(String(64), nullable=True)
     is_required: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    recipe: Mapped[RecipeModel] = relationship("RecipeModel", back_populates="ingredients")

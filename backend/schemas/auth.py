@@ -22,20 +22,6 @@ class RegisterRequest(BaseModel):
     password: str = Field(..., min_length=6, max_length=64, description="密码")
 
 
-class TokenResponse(BaseModel):
-    """Token 响应。"""
-
-    access_token: str = Field(..., description="访问令牌")
-    refresh_token: str = Field(..., description="刷新令牌")
-    token_type: str = Field(default="bearer", description="令牌类型")
-
-
-class RefreshTokenRequest(BaseModel):
-    """刷新令牌请求。"""
-
-    refresh_token: str = Field(..., description="刷新令牌")
-
-
 class UserResponse(BaseModel):
     """用户信息响应。"""
 
@@ -46,3 +32,18 @@ class UserResponse(BaseModel):
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class TokenResponse(BaseModel):
+    """Token 响应。"""
+
+    access_token: str = Field(..., description="访问令牌")
+    refresh_token: str = Field(..., description="刷新令牌")
+    token_type: str = Field(default="bearer", description="令牌类型")
+    user: UserResponse | None = Field(default=None, description="用户信息")
+
+
+class RefreshTokenRequest(BaseModel):
+    """刷新令牌请求。"""
+
+    refresh_token: str = Field(..., description="刷新令牌")

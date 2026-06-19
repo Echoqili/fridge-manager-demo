@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -50,6 +50,75 @@ async def test_recognize_with_mocked_ai(auth_client):
     assert data["source"] == "ai"
     assert len(data["results"]) == 2
     assert data["results"][0]["name"] == "西红柿"
+
+
+async def test_recognize_with_zhipu(auth_client):
+    """测试智谱 GLM-4V 降级识别。"""
+    mock_zhipu_response = {
+        "choices": [{"message": {"content": '[{"name":"黄瓜","category":"vegetable","confidence":0.9,"quantity":1}]'}}]
+    }
+    mock_resp = Mock()
+    mock_resp.raise_for_status = Mock()
+    mock_resp.json = Mock(return_value=mock_zhipu_response)
+
+    with (
+        patch(
+            "services.recognition_service.settings.OPENAI_API_KEY",
+            "",
+        ),
+        patch(
+            "services.recognition_service.settings.ZHIPU_API_KEY",
+            "test-zhipu-key",
+        ),
+        patch("httpx.AsyncClient") as mock_client_class,
+    ):
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_resp)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client_class.return_value = mock_client
+
+        resp = await auth_client.post(
+            "/api/v1/recognition/recognize",
+            files={"file": ("test.jpg", b"fake-image", "image/jpeg")},
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["code"] == 0
+    data = body["data"]
+    assert data["source"] == "ai"
+    assert len(data["results"]) == 1
+    assert data["results"][0]["name"] == "黄瓜"
+
+
+async def test_recognize_zhipu_fallback_to_preset(auth_client):
+    """测试智谱 API 异常时降级到预设列表。"""
+    with (
+        patch(
+            "services.recognition_service.settings.OPENAI_API_KEY",
+            "",
+        ),
+        patch(
+            "services.recognition_service.settings.ZHIPU_API_KEY",
+            "test-zhipu-key",
+        ),
+        patch("httpx.AsyncClient") as mock_client_class,
+    ):
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=Exception("network error"))
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client_class.return_value = mock_client
+
+        resp = await auth_client.post(
+            "/api/v1/recognition/recognize",
+            files={"file": ("test.jpg", b"fake-image", "image/jpeg")},
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    data = body["data"]
+    assert data["source"] == "fallback"
+    assert len(data["results"]) > 0
 
 
 async def test_recognize_requires_auth(async_client):

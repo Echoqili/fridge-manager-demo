@@ -18,7 +18,8 @@ const EMOJI_MAP = {
 // 食材分类关键词
 const CATEGORY_KEYWORDS = {
   vegetable: ['西红柿', '番茄', '胡萝卜', '土豆', '洋葱', '大蒜', '青椒', '菠菜', '生菜', '白菜', '西兰花', '黄瓜', '茄子', '蘑菇', '玉米', '葱', '姜'],
-  protein: ['鸡蛋', '蛋', '牛奶', '酸奶', '牛肉', '猪肉', '鸡肉', '鱼', '虾', '豆腐', '芝士', '黄油'],
+  meat: ['牛肉', '猪肉', '鸡肉', '鱼', '虾'],
+  dairy: ['鸡蛋', '蛋', '牛奶', '酸奶', '豆腐', '芝士', '黄油'],
   staple: ['米饭', '面条', '面包'],
   fruit: ['苹果', '香蕉', '橙子', '葡萄', '草莓', '西瓜', '柠檬']
 };
@@ -62,7 +63,8 @@ export function inferCategory(name) {
 export function getCategoryColor(category) {
   const colorMap = {
     vegetable: THEME_COLORS.sage,
-    protein: THEME_COLORS.terracotta,
+    meat: THEME_COLORS.terracotta,
+    dairy: '#E8C547',
     staple: THEME_COLORS.mustard,
     fruit: '#F4A261',
     other: THEME_COLORS.stone
@@ -74,7 +76,8 @@ export function getCategoryColor(category) {
 export function getCategoryIcon(category) {
   const iconMap = {
     vegetable: '🥬',
-    protein: '🥩',
+    meat: '🥩',
+    dairy: '🥚',
     staple: '🍚',
     fruit: '🍎',
     other: '🍽'
@@ -95,7 +98,7 @@ export function calculateSavings(ingredients) {
 
 // 获取分类统计
 export function getCategoryStats(ingredients) {
-  const stats = { vegetable: 0, protein: 0, staple: 0, fruit: 0, other: 0 };
+  const stats = { vegetable: 0, meat: 0, dairy: 0, staple: 0, fruit: 0, other: 0 };
   ingredients.forEach((item) => {
     const cat = item.category || inferCategory(item.name);
     stats[cat] = (stats[cat] || 0) + (item.quantity || item.qty || 1);

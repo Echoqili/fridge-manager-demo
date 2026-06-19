@@ -32,7 +32,7 @@ function NutritionPage() {
     if (ingredients.length === 0) {
       return '添加食材后，我会根据你的库存给出营养搭配建议。';
     }
-    if (localStats.protein === 0) {
+    if (localStats.meat === 0 && localStats.dairy === 0) {
       return '本周蛋白质摄入偏少，建议补充鸡蛋、牛奶或肉类。';
     }
     if (localStats.vegetable === 0) {
@@ -87,7 +87,10 @@ function NutritionPage() {
                   <Statistic title="🥬 蔬菜类" value={localStats.vegetable} valueStyle={{ color: '#7C9A6B' }} />
                 </Col>
                 <Col span={12}>
-                  <Statistic title="🥩 肉蛋奶" value={localStats.protein} valueStyle={{ color: '#E07A5F' }} />
+                  <Statistic title="🥩 肉类" value={localStats.meat} valueStyle={{ color: '#E07A5F' }} />
+                </Col>
+                <Col span={12}>
+                  <Statistic title="🥚 蛋奶类" value={localStats.dairy} valueStyle={{ color: '#E8C547' }} />
                 </Col>
                 <Col span={12}>
                   <Statistic title="🍚 主食" value={localStats.staple} valueStyle={{ color: '#F2CC8F' }} />

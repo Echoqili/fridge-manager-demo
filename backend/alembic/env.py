@@ -15,7 +15,7 @@ from alembic import context
 from core.config import settings
 
 # 确保所有模型被导入
-from models import ingredient, recipe, user  # noqa: F401
+from models import ingredient, recipe, shopping_list, user  # noqa: F401
 from models.database import Base
 
 # Alembic 配置

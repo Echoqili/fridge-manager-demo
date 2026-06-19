@@ -13,6 +13,23 @@ export default defineConfig({
       }
     }
   },
+  build: {
+    // 启用 CSS 代码分割
+    cssCodeSplit: true,
+    // 设置 chunk 大小警告阈值
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        // 手动分包：将第三方依赖拆分为独立 chunk
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'antd-vendor': ['antd', '@ant-design/icons'],
+          'echarts-vendor': ['echarts', 'echarts-for-react'],
+          'utils-vendor': ['axios', 'dayjs']
+        }
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',

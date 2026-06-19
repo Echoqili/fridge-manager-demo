@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from core.security import hash_password
 
 # 在导入 main 之前导入所有模型，确保 metadata 完整
-from models import ingredient, recipe, user  # noqa: F401
+from models import ingredient, recipe, shopping_list, user  # noqa: F401
 from models.database import Base, get_db
 from models.user import UserModel
 from schemas.ingredient import IngredientCreate

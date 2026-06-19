@@ -4,7 +4,6 @@ import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import * as authApi from '../api/auth';
-import { TOKEN_KEY, USER_KEY } from '../config';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -12,7 +11,7 @@ function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useApp();
+  const { login, demoLogin } = useApp();
   const { message } = App.useApp();
 
   const handleLogin = async (values) => {
@@ -45,11 +44,9 @@ function AuthPage() {
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      const demoUser = { username: 'demo', user_id: 'demo' };
-      localStorage.setItem(TOKEN_KEY, 'demo-token');
-      localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+      demoLogin();
       message.success('已进入演示模式');
-      window.location.href = '/';
+      navigate('/');
     } catch (e) {
       message.error('演示模式启动失败');
     } finally {

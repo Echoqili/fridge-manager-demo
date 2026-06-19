@@ -1,5 +1,5 @@
 import { Card, Tag, Space, Typography } from 'antd';
-import { ClockCircleOutlined, FireOutlined, TeamOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, FireOutlined, TeamOutlined, RobotOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 
@@ -7,6 +7,9 @@ function RecipeCard({ recipe, onClick }) {
   const handleClick = () => {
     if (onClick) onClick(recipe);
   };
+
+  const isAiSource = recipe.source === 'ai';
+  const matchedCount = recipe.match_count ?? recipe.matchCount ?? 0;
 
   return (
     <Card
@@ -52,15 +55,24 @@ function RecipeCard({ recipe, onClick }) {
           <TeamOutlined /> {recipe.servings || 2} 人份
         </span>
       </Space>
-      {Array.isArray(recipe.tags) && recipe.tags.length > 0 && (
-        <Space size={[4, 4]} wrap>
-          {recipe.tags.map((tag) => (
+      <Space size={[4, 4]} wrap style={{ marginBottom: 8 }}>
+        {isAiSource && (
+          <Tag icon={<RobotOutlined />} color="purple" style={{ borderRadius: 999 }}>
+            AI 生成
+          </Tag>
+        )}
+        {matchedCount > 0 && (
+          <Tag color="#7C9A6B" style={{ borderRadius: 999 }}>
+            匹配 {matchedCount} 种食材
+          </Tag>
+        )}
+        {Array.isArray(recipe.tags) &&
+          recipe.tags.map((tag) => (
             <Tag key={tag} color="#7C9A6B" style={{ borderRadius: 999 }}>
               {tag}
             </Tag>
           ))}
-        </Space>
-      )}
+      </Space>
       {Array.isArray(recipe.need) && recipe.need.length > 0 && (
         <div style={{ marginTop: 8 }}>
           <Text type="secondary" style={{ fontSize: 12 }}>

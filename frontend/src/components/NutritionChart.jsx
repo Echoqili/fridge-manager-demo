@@ -1,4 +1,4 @@
-import ReactECharts from 'echarts-for-react';
+import ECharts from './ECharts';
 import { THEME_COLORS } from '../config';
 
 function NutritionChart({ data }) {
@@ -57,7 +57,7 @@ function NutritionChart({ data }) {
 
   return (
     <div data-testid="nutrition-chart">
-      <ReactECharts option={option} style={{ height: 320 }} />
+      <ECharts option={option} style={{ height: 320 }} />
     </div>
   );
 }
