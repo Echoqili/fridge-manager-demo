@@ -775,7 +775,7 @@ def sample_ingredient():
 - 构建命令：`npm run build`
 - 产物目录：`frontend/dist`
 - 部署方式：GitHub Actions 自动部署到 GitHub Pages
-- 访问地址：`https://echoqili.github.io/fridge-manager-demo/`
+- 访问地址：`https://echoqili.github.io/fridge-manager/`
 
 ### 10.3 后端部署（Docker）
 
