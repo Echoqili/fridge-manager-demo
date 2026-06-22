@@ -10,7 +10,8 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // 通过环境变量支持 E2E 真实后端测试指向虚拟机或远程服务
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
         changeOrigin: true
       }
     }

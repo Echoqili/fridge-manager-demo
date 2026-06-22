@@ -22,6 +22,10 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000
+    timeout: 120000,
+    env: {
+      // 支持真实后端 E2E 测试：设置 VITE_API_PROXY_TARGET 指向虚拟机或远程后端
+      VITE_API_PROXY_TARGET: process.env.VITE_API_PROXY_TARGET
+    }
   }
 });

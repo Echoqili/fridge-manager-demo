@@ -53,6 +53,7 @@ build/
 
 # Frontend test artifacts
 frontend/test-results/
+frontend/playwright-report/
 
 # Deployment artifacts
 *.tar.gz
