@@ -183,6 +183,8 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
+        env:
+          BASE_PATH: /fridge-manager-demo/
         run: npm run build
 
       - name: Upload build artifacts
@@ -279,6 +281,8 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
+        env:
+          BASE_PATH: /fridge-manager-demo/
         run: npm run build
 
       - name: Setup Pages

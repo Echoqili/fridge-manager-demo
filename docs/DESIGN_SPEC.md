@@ -217,7 +217,7 @@ fridge-manager-demo/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── README.md
-└── index.html                        # 原 Demo（保留兼容）
+└── legacy-demo.html                  # 原静态 Demo（已归档，不再作为首页）
 ```
 
 ---

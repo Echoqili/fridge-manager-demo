@@ -44,8 +44,9 @@ client.interceptors.response.use(
     if (response && response.status === 401) {
       // 401 跳转登录
       localStorage.removeItem(TOKEN_KEY);
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const loginPath = import.meta.env.BASE_URL + 'login';
+      if (!window.location.pathname.endsWith('/login')) {
+        window.location.href = loginPath;
       }
     }
     return Promise.reject(error);

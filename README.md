@@ -8,9 +8,10 @@
 
 ## 在线体验
 
-🔗 **[立即体验 Demo](https://echoqili.github.io/fridge-manager/)**
+🔗 **[立即体验 Demo](https://echoqili.github.io/fridge-manager-demo/)**
 
 > 点击登录页「演示模式体验」按钮，无需注册即可体验全部功能，预填充 12 种常见食材。
+> Demo 由项目 `frontend/` 构建并自动部署到 GitHub Pages。
 
 ---
 
@@ -128,7 +129,9 @@ fridge-manager/
 
 ### 在线体验
 
-访问 [Demo 地址](https://echoqili.github.io/fridge-manager/)，点击「演示模式体验」即可。
+访问 [Demo 地址](https://echoqili.github.io/fridge-manager-demo/)，点击「演示模式体验」即可。
+
+> **部署说明**：本 Demo 通过 `.github/workflows/ci.yml` 自动构建 `frontend/` 并部署到 GitHub Pages。请确保仓库 **Settings → Pages → Source** 选择 **GitHub Actions**，否则页面不会更新为基于项目的 React 应用。
 
 ### 本地开发
 
