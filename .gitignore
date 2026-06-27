@@ -7,9 +7,11 @@ __pycache__/
 
 # Virtual environments
 venv/
+venv-*/
 ENV/
 env/
 .venv/
+fridge-py311/
 
 # IDE
 .idea/
